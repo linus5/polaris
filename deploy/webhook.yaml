@@ -15,7 +15,7 @@ metadata:
     app: polaris
 type: Opaque
 stringData:
-  cert.pem: ''
+  key.pem: ''
 ---
 # Source: polaris/templates/configmap.yaml
 apiVersion: v1
@@ -240,7 +240,7 @@ spec:
             - --webhook
             - --config
             - /opt/app/config.yaml
-          image: 'quay.io/reactiveops/polaris:3b29be4abf7fb34eb03ad00fc5ff299193dab717'
+          image: 'quay.io/reactiveops/polaris:rb_webhook-test'
           imagePullPolicy: 'Always'
           ports:
             - containerPort: 9876
