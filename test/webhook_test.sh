@@ -42,7 +42,7 @@ function check_webhook_is_ready() {
 function check_timeout() {
     local timeout_epoch="${1}"
     if [[ "$(date +%s)" -ge "${timeout_epoch}" ]]; then
-        echo -e "Timeout hit waiting for webhook readiness: exiting"
+        echo -e "Timeout hit waiting for readiness: exiting"
         grab_logs
         clean_up
         exit 1
