@@ -12,19 +12,8 @@ function check_webhook_is_ready() {
     # Get the epoch time in one minute from now
     local timeout_epoch
 
-    # Setup a timeout for one minute to wait for cluster to be ready
-    timeout_epoch=$(date -d "+1 minute" +%s)
-
-    # Check to see if the cluster is ready
-    echo "Waiting for cluster to be fully ready"
-    while kubectl get nodes | grep NotReady &>/dev/null; do
-        check_timeout "${timeout_epoch}"
-        echo -n "."
-        sleep 1
-    done
-
-    # Reset another 1 minute to wait for webhook
-    timeout_epoch=$(date -d "+1 minute" +%s)
+    # Reset another 2 minutes to wait for webhook
+    timeout_epoch=$(date -d "+2 minutes" +%s)
 
     # loop until this fails (desired condition is we cannot apply this yaml doc, which means the webhook is working
     echo "Waiting for webhook to be ready"
@@ -64,6 +53,7 @@ function clean_up() {
 
 function grab_logs() {
     kubectl -n polaris get pods -oyaml -l app=polaris
+    kubectl -n polaris describe pods -l app=polaris
     kubectl -n polaris logs -l app=polaris
 }
 
