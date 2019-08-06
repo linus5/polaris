@@ -58,8 +58,8 @@ function clean_up() {
         kubectl delete -f $filename &>/dev/null ||true
     done
     # Uninstall webhook and webhook config
-    kubectl delete -f deploy/webhook.yaml --wait=false &>/dev/null
     kubectl delete validatingwebhookconfigurations polaris-webhook --wait=false &>/dev/null
+    kubectl -n polaris delete deploy -l app=polaris --wait=false &>/dev/null
 }
 
 function grab_logs() {
