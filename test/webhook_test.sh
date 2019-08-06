@@ -9,22 +9,45 @@ sed -ri "s|'(quay.io/reactiveops/polaris:).+'|'\1${CIRCLE_SHA1}'|" ./deploy/webh
 # Testing to ensure that the webhook starts up, allows a correct deployment to pass,
 # and prevents a incorrectly formatted deployment. 
 function check_webhook_is_ready() {
-    echo "Waiting for webhook to be ready"
     # Get the epoch time in one minute from now
-    local timeout_epoch=$(date -d "+1 minute" +%s)
-    # loop until this fails (desired condition is we cannot apply this yaml doc, which means the webhook is working
-    while kubectl apply -f test/failing_test.deployment.yaml &>/dev/null; do
-        if [[ "$(date +%s)" -ge "${timeout_epoch}" ]]; then
-            echo -e "Timeout hit waiting for webhook readiness: exiting"
-            grab_logs
-            clean_up
-            exit 1
-        fi
+    local timeout_epoch
+
+    # Setup a timeout for one minute to wait for cluster to be ready
+    timeout_epoch=$(date -d "+1 minute" +%s)
+
+    # Check to see if the cluster is ready
+    echo "Waiting for cluster to be fully ready"
+    while kubectl get nodes | grep NotReady &>/dev/null; do
+        check_timeout "${timeout_epoch}"
         echo -n "."
+        sleep 1
+    done
+
+    # Reset another 1 minute to wait for webhook
+    timeout_epoch=$(date -d "+1 minute" +%s)
+
+    # loop until this fails (desired condition is we cannot apply this yaml doc, which means the webhook is working
+    echo "Waiting for webhook to be ready"
+    while kubectl apply -f test/failing_test.deployment.yaml &>/dev/null; do
+        check_timeout "${timeout_epoch}"
+        echo -n "."
+        # clean up the test (the "or true" is to catch the condition that it couldn't delete something
         kubectl delete -f test/failing_test.deployment.yaml &>/dev/null || true
     done
-    # clean up the test (the "or true" is to catch the condition that it couldn't delete something
+
     echo "Webhook started!"
+}
+
+# Check if timeout is hit and exit if it is
+function check_timeout() {
+    local timeout_epoch="${1}"
+    if [[ "$(date +%s)" -ge "${timeout_epoch}" ]]; then
+        echo -e "Timeout hit waiting for webhook readiness: exiting"
+        grab_logs
+        clean_up
+        exit 1
+    fi
+
 }
 
 # Clean up all your stuff
