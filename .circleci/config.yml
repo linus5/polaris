@@ -71,6 +71,7 @@ references:
       name: Test Dashboard
       command: |
         sed -ri "s|'(quay.io/reactiveops/polaris:).+'|'\1${CIRCLE_SHA1}'|" ./deploy/dashboard.yaml
+        while kubectl get ns polaris | grep Terminating; do echo "Waiting for polaris namespace to be cleaned up"; done
         kubectl apply -f ./deploy/dashboard.yaml
         sleep 10
         kubectl get pods --namespace polaris
