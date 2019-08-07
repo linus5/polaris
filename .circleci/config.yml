@@ -126,7 +126,7 @@ jobs:
 
   test_k8s:
     working_directory: ~/polaris
-    resource_class: medium
+    resource_class: large
     executor: vm
     steps:
       - checkout
